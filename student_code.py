@@ -142,6 +142,63 @@ class KnowledgeBase(object):
         """
         ####################################################
         # Student code goes here
+        if factq(fact_or_rule):
+
+            if fact_or_rule in self.facts:
+
+                x = self.help_explain(self._get_fact(fact_or_rule),0)
+                return x
+            else: return "Fact is not in the KB"
+
+        elif isinstance(fact_or_rule,Rule):
+
+            if fact_or_rule in self.rules:
+
+                x = self.help_explain(self._get_rule(fact_or_rule),0)
+                return x
+            else: return "Rule is not in the KB"
+                
+        else: return False
+
+    
+        
+
+    def help_explain(self,fact_or_rule,index):
+        s = ""
+
+        if factq(fact_or_rule): 
+            fact = self._get_fact(fact_or_rule)
+            s += "fact: " + str(fact.statement)
+            if fact.asserted:
+                s += " ASSERTED"
+            s += "\n"
+            
+            for i in fact.supported_by:
+                s += " "* (index + 2) + "SUPPORTED BY\n"
+                s += " "* (index + 4) + self.help_explain(i[0],index+4)
+                s += " "* (index + 4) + self.help_explain(i[1],index+4)
+            
+            return s
+
+        elif isinstance(fact_or_rule,Rule):   
+            rule = self._get_rule(fact_or_rule)
+            s += "rule: ("
+            for i in rule.lhs:
+                if i != rule.lhs[0]:
+                    s += ", "
+                s += str(i)
+            s += ") -> " + str(rule.rhs)
+            if rule.asserted: 
+                s += " ASSERTED"
+            s += "\n"
+            
+            for j in rule.supported_by:
+                s += " "* (index + 2) + "SUPPORTED BY\n"
+                s += " "* (index + 4) + self.help_explain(j[0],index+4)
+                s += " "* (index + 4) + self.help_explain(j[1],index+4)
+            
+            return s
+        
 
 
 class InferenceEngine(object):
@@ -153,7 +210,7 @@ class InferenceEngine(object):
             rule (Rule) - A rule from the KnowledgeBase
             kb (KnowledgeBase) - A KnowledgeBase
 
-        Returns:
+        Returns:        
             Nothing            
         """
         printv('Attempting to infer from {!r} and {!r} => {!r}', 1, verbose,
